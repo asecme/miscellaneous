@@ -1,0 +1,288 @@
+clear;
+clc;
+close all;
+
+%%%%%%%%%%%%%%%%%%%%% INPUTS %%%%%%%%%%%%%%%%%%%%%
+%Link lengths [cm]
+r1 = 5;      % Height of O2              
+r2 = 3;      % Radius of crank          
+r4 = 10;     % Length of longest beam    
+r7 = 6;      % Height of slider          
+r5 = 10;     % Link connected to the output slider                           
+n = 1;       % Velocities are plotted after n cycle
+
+
+% % EXAMPLE FOR THE CASE WITH LIMITING ANGLE
+% r1 = 5;      % Height of O2              
+% r2 = 4;      % Radius of crank          
+% r4 = 15;     % Length of longest beam    
+% r7 = 8;      % Height of slider          
+% r5 = 6;      % Link connected to the output slider   
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+th1 = pi/2;  %Angle between grouds
+th7 = pi/2;  %Angle between ground and ground of output slider
+th6 = 0;     %Output slider angle with horizontal
+
+omg2   = 10; %Angular Velocity of the input crank
+alpha2 = 2;  %Angular Acceleration of the input crank   
+
+%Empty arrays to keep velocity and acceleration information
+arr_omg4    = [];
+arr_omg5    = [];
+arr_r3_dot  = [];
+arr_v6      = [];
+arr_alpha4  = [];
+arr_alpha5  = [];
+arr_a6      = [];
+arr_r3_ddot = [];
+arr_r6      = [];
+arr_th2     = [];
+counter = 0;
+
+% Check Grashoff
+b1 = r2 < r1;            %Inverted slider crank condition.
+b2 = r4 > r1 + r2;       %To ensure graphical coherence otherwise link will rotate seperately. 
+
+if r4 - r7 > 0           %Slider Crank Grashof Condition, if not satisfied there can be a limited motion.
+    b3 = r4 - r7 <= r5;
+else
+    b3 = r4 + r7 <= r5;
+end
+
+%Main Loop Starts
+
+if (b1 == 1 && b2 == 1)
+    
+    if b3 == false
+        disp('Grashof condition is not satisfied!');
+        disp('There may be limited motion !!!');
+        pause(1.5);
+    end
+    
+    % Time Ratio Calculation for Quick Return Mechanism
+    
+    r3_rat = sqrt(r1^2-r2^2);          %Stroke of input side slider while it is tangent to input crank's trajectory.  
+    alpha_r = 2*atan(r3_rat/r2);       %Quick Return Angle in radian
+    alpha_r_deg = 360*alpha_r/(2*pi);  %Quick Return Angle in degree
+    beta = 360 - alpha_r_deg ;         %Forward Angle 
+    time_rat = beta / alpha_r_deg;     %Time Ratio between normal and quick motion.   
+    
+    initialAngle = pi;
+    th2 = initialAngle;                 %Input Angle starts from pi
+    boolean = true;
+    iteration = 0;                     %Variable for checking limited angle motion. 
+
+    while (1) 
+        
+        iteration = iteration + 1;
+        
+        % POSITION ANALYSIS     
+        
+        %input side slider position
+        r3 = sqrt((r1*cos(th1)+r2*cos(th2))^2+(r1*sin(th1)+r2*sin(th2))^2);
+
+        %Link that connects input side to output side (Coupler)
+        r8 = r4 - r3; 
+
+        %Coupler angle
+        th4 = atan2((r1*sin(th1)+r2*sin(th2)),(r1*cos(th1)+r2*cos(th2)));
+        
+        
+        %Manipulation to make calculations easier.
+        r = sqrt( (r4*cos(th4)-r7*cos(th7))^2 + (r4*sin(th4)-r7*sin(th7))^2 );
+        th = atan2( (r4*sin(th4)-r7*sin(th7)) , (r4*cos(th4)-r7*cos(th7)) );
+    
+        %Angle of the Link that is Connected to the Output Slider.
+        th5 = pi - th6 - asin( (r*cos(th)*sin(th6) - r*sin(th)*cos(th6)) / (r5));
+        
+        %Stroke of output Slider
+        r6 = ( r*cos(th) + r5*cos(th5) ) / cos(th6);
+        
+        
+        %%%%SIMULATION
+        if imag(r6) == 0     %If there is an imaginary number than this system cannot reach that position. If no imaginary number than it can move. 
+            figure(1)
+%             set(gcf,'units','normalized','outerposition',[0 0 1 1])
+
+            %Line O1A 
+            O1A = plot([0 r3*cos(th4)],[0 r3*sin(th4)] , 'LineWidth', 3, 'color', 'blue');
+            hold on
+
+            %Link O2A
+            O2A = plot([0 r2*cos(th2)],[r1 r1+r2*sin(th2)] , 'LineWidth', 1.5, 'color', 'red');
+            hold on 
+
+            %Link AB
+            AB = plot([r3*cos(th4) r3*cos(th4)+r8*cos(th4)],[r3*sin(th4) r3*sin(th4)+r8*sin(th4)] , 'LineWidth', 1.5, 'color', 'blue');
+            hold on
+
+            %Link B6
+            B6 = plot([r3*cos(th4)+r8*cos(th4) r6], [r3*sin(th4)+r8*sin(th4) r7] , 'LineWidth', 1.5, 'color', 'black');
+            hold on
+
+            % Trajectories
+            t1 = plot(r6, r7, '.', 'color', 'black');                       %Output Slider Trajectory
+            hold on
+
+            t2 = plot(r2*cos(th2), r1+r2*sin(th2), '.', 'color', 'red');    %Input Crank Trajectory
+            hold on
+
+            % Joints and Grounds
+            xx = [r2*cos(th2),       r3*cos(th4)+r8*cos(th4)];
+            yy = [r1+r2*sin(th2),    r3*sin(th4)+r8*sin(th4)];
+            joints = scatter(xx, yy, 50,'MarkerEdgeColor','blue','MarkerFaceColor','blue', 'LineWidth',1.5);
+            ground = scatter([0 0], [0 r1], 50,'MarkerEdgeColor','red','MarkerFaceColor','red', 'LineWidth',5);
+            slider = plot(r6, r7, '-s', 'MarkerSize', 40, 'MarkerEdgeColor','red', 'MarkerFaceColor', [1 .6 .6]);
+            Slider = scatter(r6, r7, 50,'MarkerEdgeColor','blue','MarkerFaceColor','blue', 'LineWidth',5);
+    
+            
+            ylabel('position')
+            grid on
+
+            pause(0.001)
+
+            yy = r4 + 5;
+            xx = r5 + 4*r2;
+            axis([-xx xx -yy yy]);
+
+            delete(O1A)
+            delete(O2A)
+            delete(AB)
+            delete(B6)
+            delete(joints)
+            delete(slider)
+            delete(Slider)
+        else
+            
+            if iteration == 1
+                disp('Well... It seems not possible...')        %If it is not possible for mechanism to move between limiting angle,
+                break;                                          %Then it stops to iterate 
+            end
+        
+        end
+
+
+        ll = (sqrt( (r3*cos(th4)+r8*cos(th4) - r6)^2 + (r3*sin(th4)+r8*sin(th4) - r7)^2 ));
+        if imag(ll) ~= 0
+            delete(O1A)
+            delete(O2A)
+            delete(AB)
+            delete(B6)
+            th22 = th2;
+            boolean = ~boolean;  
+        end
+
+        if imag(r6) == 0
+            arr_r6 = [arr_r6 r6];
+            min_r6 = min(arr_r6);
+            max_r6 = max(arr_r6);
+            stroke = max_r6 - min_r6;
+            
+            if b3 == false
+                arr_th2 = [arr_th2 th2];
+                limitin_angle_1 = min(arr_th2);
+                limitin_angle_2 = max(arr_th2);
+            end
+            
+            %VELOCITY ANALYSIS
+            omg4 = (r2*omg2*cos(th2)*cos(th4) + r2*omg2*sin(th2)*sin(th4)) / r3 ;
+            arr_omg4 = [arr_omg4 omg4];                          %Array keeping info of omega 4
+
+            omg5 = (-r4*omg4*cos(th4))/(r5*cos(th5));
+            arr_omg5 = [arr_omg5 omg5];                          %Array keeping info of omega 5
+
+            r3_dot = sqrt((r2*omg2*cos(th2)-r3*omg4*cos(th4))^2 + (r3*omg4*sin(th4) - r2*omg2*sin(th2))^2);
+            arr_r3_dot = [arr_r3_dot r3_dot];                    %Array keeping info of crank slider
+
+            v6 = -r4*omg4*sin(th4)-r5*omg5*sin(th5) ;           
+            arr_v6 = [arr_v6 v6];                                %Array keeping info of output slider
+
+            %ACCELERATION ANALYSIS
+            alpha4 = (r2/r3)*(-omg2^2 * cos(th2-th4) + alpha2 * sin(th2-th4))- 2 * (r3_dot/r3) * omg4;
+            arr_alpha4 = [arr_alpha4 alpha4];
+
+            alpha5 = (r4 * (omg4^2*sin(th4) - alpha4*cos(th4)) + r5*omg5^2*sin(th5)) / (r5*cos(th5));
+            arr_alpha5 = [arr_alpha5 alpha5];
+
+            a6 = -r4*alpha4*sin(th4) - r4*omg4^2 * cos(th4) - r5*alpha5*sin(th5) - r5*omg5^2*cos(th5);
+            arr_a6 = [arr_a6 a6];
+
+            r3_ddot = 0.5*(2*(r2*alpha2*cos(th2)-r2*omg2*sin(th2)-r3*alpha4*cos(th4)+r3*omg4^2*sin(th4))*(r2*omg2*cos(th2)-r3*omg4*cos(th4)) + 2*(r3*alpha4*sin(th4)+r3*omg4^2*cos(th4) - r2*alpha2*sin(th2) - r2*omg2^2*cos(th2))*(r3*omg4*sin(th4) - r2*omg2*sin(th2)))^(-0.5);
+            arr_r3_ddot = [arr_r3_ddot r3_ddot];      
+
+        end
+
+        if boolean == true
+            th2 = th2 + 0.01*pi;                %0.06 is the update of input angle
+        else
+            th2 = th2 - 0.01*pi;
+        end
+        arr_th2 = [arr_th2 th2];             %Stores input angle value;
+        
+        
+        if (th2 > initialAngle + 2*n*pi)
+            figure(2)
+            plot(arr_th2, arr_omg4,'r')
+            hold on 
+            plot(arr_th2, arr_omg5,'b')
+            title('Angular Velocity')
+            legend('Omega4','Omega5')
+            xlabel('Input Angle [rad]')
+            ylabel('Angular Velocity [rad/s]')             
+            grid on
+
+
+            figure(3)
+            plot(arr_th2, arr_r3_dot,'g')
+            hold on 
+            plot(arr_th2, arr_v6,'k')
+            title('Slider Velocity')
+            legend('Crank Slider','Output Slider')
+            xlabel('Input Angle [rad]')
+            ylabel('Velocity[cm/s]')
+            grid on 
+            stroke
+            break;
+        
+        elseif b3 == false && th2 == limitin_angle_2
+            counter = counter + 1;
+            if counter == 2
+                figure(2)
+                plot(arr_th2(1:length(arr_omg4)/2), arr_omg4(1:length(arr_omg4)/2),'r')
+                hold on 
+                plot(arr_th2(1:length(arr_omg5)/2), arr_omg5(1:length(arr_omg4)/2),'b')
+                title('Angular Velocity')
+                legend('Omega4','Omega5')
+                xlabel('Input Angle [rad]')
+                ylabel('Angular Velocity [rad/s]')             
+                grid on
+
+
+                figure(3)
+                plot(arr_th2(1:length(arr_r3_dot)/2), arr_r3_dot(1:length(arr_omg4)/2),'g')
+                hold on 
+                plot(arr_th2(1:length(arr_v6)/2), arr_v6(1:length(arr_omg4)/2),'k')
+                title('Slider Velocity')
+                legend('Crank Slider','Output Slider')
+                xlabel('Input Angle [rad]')
+                ylabel('Velocity[cm/s]')
+                grid on  
+                limitin_angle_1
+                limitin_angle_2
+                break;            
+            end
+            
+        end
+        
+        
+    end
+
+    
+    
+else
+    
+    disp('This cannot be a quick return. Grashof condition is not satisfied!')
+
+end
