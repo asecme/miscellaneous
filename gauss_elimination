@@ -1,0 +1,23 @@
+function [soln] = gausselimination(A,b)
+
+x = length(b); %%Scanning row elements
+
+z = zeros(x,1); %%division coeff for reducing row echolon
+
+for k = 1 : x-1;       
+
+    z(k+1:x) = A(k+1:x,k) / A(k,k);       %% Ratio one row to another
+
+        for i = k+1 : x
+
+             A(i, k+1:x) = A(i,k+1:x) - z(i) * A(k,k+1:x);   %Row echolon calculatıon
+
+        end;
+
+    b(k+1:x) = b(k+1:x) - b(k) * z(k+1:x);   %row echolon for right side 
+ 
+end
+
+U = triu(A);  %coefficient matrix
+
+soln = linsolve(U,b);  %%Solution to set of equation
