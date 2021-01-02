@@ -1,0 +1,38 @@
+ 
+    
+for th = (pi/8) : 0.1 : 2*pi
+
+    %Length of the links
+    a = 5;
+    c = 6;
+    d = 7;
+    b = 8;
+    
+    %Length of A04
+    e = sqrt(a^2+d^2 - (2*a*d*cos(th)));
+    
+    %Other angles in fourbar
+    
+    th1 = acos(((e^2 + d^2) - a^2) ./ (2*e*d));
+    
+    th2 = (((e^2 + b^2) - c^2) ./ (2*e*b));
+    
+    th3 = (th2 - th1);
+    
+    %Line O2A
+    O2A = line([0 a*cos(th)] , [0 a*sin(th)]);
+    hold on
+    %Line AB   
+    AB = line([a*cos(th) a*cos(th)+b*cos(th3)] , [ a*sin(th) a*sin(th)+b*sin(th3)])
+    hold on
+    %Ground Link
+    GND = line([0,d],[0,0])
+    hold on
+    %04B Link
+    O4B = line([d a*cos(th)+b*cos(th3)] , [0  a*sin(th)+b*sin(th3)]);
+    axis([-20 20 -20 20]);
+    pause(0.1)
+    
+end
+    
+    
