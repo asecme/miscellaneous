@@ -1,0 +1,86 @@
+%%System Descriptions
+
+%Lagrangian of the system
+%L=0.5*(m1+m2)*xdot^2+m2*xdot*thetadot*(R-r)*cos(theta)+0.5*m2*(R-r)^2*thetadot^2+0.25*m2*R^2*thetadot^2
+
+%First Equation of motion with genreralized coordinate as x
+%(m1+m2)*xddot-(m2*(R-r))(thetaddot*costheta-(thetadot)^2*sintheta)+kx=F
+
+%Second Equation of motion with generalized coordinate as Theta
+%1.5*(R-r)thetaddot-xddot*costheta+g*sintheta=0
+
+%System Parameters
+R=0.5; %Radius of curvature of the cart [meter]
+r=0.2; %Radius of disc [meter]
+m1=50 %Mass of the cart [kg]
+m2=5; %mass of the disc [kg]
+F=1000 %Force on the cart [N]
+g=9.81; %Gravitational Force [m/s^2]
+k=250; %Spring Constant [N/m]
+
+%Simulation Paramaters
+dt=0.001; %Step time [second]
+Tinitial=0; %Initial Time 
+Tfinal=5; %Final time [second]
+
+%%Initial Conditions
+theta_initial=1/pi; %Initial position of the disc on the cart [rad]
+omega_initial=2; %Initial angular veloity [rad/s]
+x_initial=1; %Initial position of the cart [m]
+v_initial=2; %Initial Velocity [m/s]
+
+%Simulation
+time=Tinitial:dt:Tfinal;
+N=length(time);
+
+%Results Matrices
+Theta=zeros(1,N);
+Omega=zeros(1,N);
+Alpha=zeros(1,N);
+Position=zeros(1,N);
+Velocity=zeros(1,N);
+Acceleration=zeros(1,N);
+
+%Initial Values
+Theta(1)=theta_initial;
+Omega(1)=omega_initial;
+Position(1)=x_initial;
+Velocity(1)=v_initial;
+Alpha(1)=(F*cos(Theta(1))-(m1+m2)*g*sin(Theta(1))-k*Position(1)*cos(Theta(1))-Omega(1)^2*m2*sin(Theta(1))*cos(Theta(1))*(R-r))/(1.5*(m1+m2)*(R-r)-m2*cos(Theta(1))^2*(R-r));
+Acceleration(1)=(1.5*(R-r)*Alpha(1)+g*sin(Theta(1)))/(cos(Theta(1)));
+
+%%Up to N values
+for i=2:N
+    Omega(i)=Omega(i-1)+Alpha(i-1)*dt;
+    Theta(i)=Theta(i-1)+Omega(i-1)*dt;
+    Velocity(i)=Velocity(i-1)+Acceleration(i-1)*dt;
+    Position(i)=Position(i-1)+Velocity(i-1)*dt;
+    Alpha(i)=(F*cos(Theta(i))-(m1+m2)*g*sin(Theta(i))-k*Position(i)*cos(Theta(i))-Omega(i)^2*m2*sin(Theta(i))*cos(Theta(i))*(R-r))/(1.5*(m1+m2)*(R-r)-m2*cos(Theta(i))^2*(R-r));
+    Acceleration(i)=(1.5*(R-r)*Alpha(i)+g*sin(Theta(i)))/(cos(Theta(i)));
+end
+
+%%Graphs
+figure(1)
+plot(time,Theta*pi,'color','k')
+xlabel('Time (s)')
+ylabel('Angle (Degree)')
+
+figure(2)
+plot(time,Position,'color','g')
+xlabel('Time (s)')
+ylabel('Position (meter)')
+
+figure(3)
+plot(time,Velocity,'color','r')
+xlabel('Time (second)')
+ylabel('Velocity (m/s)')
+
+figure(4)
+plot(time,Omega*pi,'color','k')
+xlabel('Time (second)')
+ylabel('Angular Velocity (Degree/second)')
+
+figure(5) %%%When position is zero angular velocity is at maximum
+plot(time,Theta*pi,'color','k')
+hold on 
+plot(time,Omega*pi,'color','r')
