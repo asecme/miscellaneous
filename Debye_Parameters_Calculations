@@ -1,0 +1,40 @@
+%% Debye Screening Calculations 
+
+clc; clear; close all;
+
+%%
+eps_0 = 8.8e-12;        % vacuum permittivity
+eps_r = 78;             % dielectric constant of DMEM
+eps = eps_r * eps_0;    % permittivity of solution
+
+T = 300;                % Kelvin
+
+k_B = 1.38e-23;         % boltzman const
+
+z = 1e0;                  % charge ratio
+
+e_charge = 1.6e-19;     % electric charge
+
+C_b = 75e-3;            % solution concentration [M]
+
+D = 1e3                 % Ion diffusivity [mu^2/s]
+
+N_A = 6e23;             % Avogadro Number
+%% Debye Length Calculation
+num = eps * k_B*T;
+denum = 2*z*e_charge.^2*C_b*N_A;
+
+lambda = sqrt(num/denum)    % Debye Length, [m]
+lambda_mu = lambda*1e6;     % micrometer
+%% Debye Time 
+tau_d = lambda_mu.^2 / D    % second
+tau_d_mu = tau_d*1e6;       % microsecond
+
+
+%% Bulk Diffusion Time
+L = 50;                     % Seperation of Electrodes  [um]
+tau_L = (L/2).^2 / D        % second
+
+%% Charge Relaxation Time
+
+tau_c = lambda * (L/2) / D  % second
