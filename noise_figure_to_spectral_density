@@ -1,0 +1,12 @@
+%% Noise figure to Spectral Noise Density conversion for an amplifier
+%% at room temperature (290K) for 50 ohms source impedance
+
+%%
+
+kB  = 1.38e-23;                       % Boltzman Constant
+T   = 290;                            % [K], Temperature
+R_0 = 50                              % [ohms], source impedance
+NF  = 3                               % [dB], Noise Figure of the amplifier (from datasheet)
+
+
+S = sqrt(4*kB*T*R_0*(10^(NF/10)-1));  % [nV/root(Hz)] Noise Spectral Density
