@@ -10,3 +10,8 @@ NF  = 3                               % [dB], Noise Figure of the amplifier (fro
 
 
 S = sqrt(4*kB*T*R_0*(10^(NF/10)-1));  % [nV/root(Hz)] Noise Spectral Density
+
+
+Minimum voltage noise spectal density: 0.9 nV/sqrt(Hz)
+
+Minimum current noise spectal density: 0.3 fA/sqrt(Hz)
