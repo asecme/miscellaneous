@@ -15,3 +15,7 @@ S = sqrt(4*kB*T*R_0*(10^(NF/10)-1));  % [nV/root(Hz)] Noise Spectral Density
 Minimum voltage noise spectral density: 0.9 nV/sqrt(Hz)
 
 Minimum current noise spectral density: 0.3 fA/sqrt(Hz)
+
+Bipolar Transistor: Low  Z_in & R_opt ~50  kΩ
+JFET    Transistor: Med  Z_in & R_opt ~5   MΩ
+MOSFET  Transistor: High Z_in & R_opt ~500 MΩ
